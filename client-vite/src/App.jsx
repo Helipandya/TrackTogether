@@ -19,7 +19,7 @@ export default function App() {
       socket.emit('locationUpdate', { lat: latitude, lng: longitude, userId: user?._id })
 
       if (token) {
-        axios.post('/api/users/location', { lat: latitude, lng: longitude }, {
+        axios.post('http://localhost:5000/api/users/location', { lat: latitude, lng: longitude }, {
           headers: { Authorization: `Bearer ${token}` }
         })
       }
@@ -34,7 +34,7 @@ export default function App() {
   }, [])
 
   const login = async () => {
-    const res = await axios.post('/api/users/login', {
+    const res = await axios.post('http://localhost:5000/api/users/login', {
       email: 'test@example.com',
       password: '123456'
     })
