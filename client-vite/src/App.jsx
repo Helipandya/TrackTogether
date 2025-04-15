@@ -35,8 +35,8 @@ export default function App() {
 
   const login = async () => {
     const res = await axios.post('http://localhost:5000/api/users/login', {
-      email: 'test@example.com',
-      password: '123456'
+      email: 'helly@example.com',
+      password: 'Helly'
     })
     localStorage.setItem('token', res.data.token)
     setUser(res.data)
