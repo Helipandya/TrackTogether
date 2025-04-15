@@ -14,7 +14,7 @@
 - Interactive map integration with Leaflet.js
 - User authentication and authorization
 - Geofencing alerts for designated areas
-- Responsive design for mobile and desktop devices
+- Responsive design for mobile and desktop devicees
 
 ## 🛠️ Tech Stack
 
