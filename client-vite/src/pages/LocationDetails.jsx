@@ -15,7 +15,7 @@ import { Icon, Style } from "ol/style";
 
 import { TbRefresh } from "react-icons/tb";
 
-const socket = io("http://localhost:5000"); // Update if using a different server
+const socket = io("https://tracktogether.onrender.com"); // Update if using a different server
 
 const LocationDetails = () => {
   const [user, setUser] = useState(null);
@@ -27,7 +27,7 @@ const LocationDetails = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/users/profile", {
+        const res = await axios.get("https://tracktogether.onrender.com/api/users/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
@@ -55,7 +55,7 @@ const LocationDetails = () => {
       });
 
       axios.post(
-        "http://localhost:5000/api/users/location",
+        "https://tracktogether.onrender.com/api/users/location",
         { lat: latitude, lng: longitude },
         { headers: { Authorization: `Bearer ${token}` } }
       );
