@@ -5,8 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import Register from './Register'
 
 export default function Login() {
-  const [email, setEmail] = useState('helly@gmail.com') // Default values for quick testing
-  const [password, setPassword] = useState('Helly')
+  const [email, setEmail] = useState('hellypandya@gmail.com') // Default values for quick testing
+  const [password, setPassword] = useState('helly@2223')
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
