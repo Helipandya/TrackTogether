@@ -60,12 +60,33 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+// exports.updateLocation = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id);
+//     if (user) {
+//       const { lat, lng } = req.body;
+//       user.location = { lat, lng };
+//       await user.save();
+//       res.json({ message: 'Location updated' });
+//     } else {
+//       res.status(404).json({ message: 'User not found' });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
 exports.updateLocation = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (user) {
       const { lat, lng } = req.body;
-      user.location = { lat, lng };
+      user.location = {
+        lat,
+        lng,
+        updatedAt: Date.now(),  // Save last update time
+      };
       await user.save();
       res.json({ message: 'Location updated' });
     } else {
@@ -75,3 +96,4 @@ exports.updateLocation = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
