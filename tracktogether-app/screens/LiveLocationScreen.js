@@ -1,7 +1,7 @@
+// LiveLocationScreen.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Button, StyleSheet, Alert, Dimensions } from 'react-native';
 import { Share } from 'react-native';
-
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,35 +9,34 @@ import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
 
 export default function LiveLocationScreen({ route }) {
-    const [userId, setUserId] = useState(null);
-
-
+  const [userId, setUserId] = useState(null);
   const [location, setLocation] = useState(null);
   const [locationSharing, setLocationSharing] = useState(false);
   const [duration, setDuration] = useState(15); // in minutes
   const timerRef = useRef(null);
   const intervalRef = useRef(null);
+
+  // Fetch userId from AsyncStorage
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await AsyncStorage.getItem('userId');
-      console.log("id" , id);
-      
+      console.log('id', id);
       setUserId(id);
     };
     fetchUserId();
   }, []);
-  
-  const shareableLink = `https://tracktogether.onrender.com/live/${userId}`;
 
+  // Shared link pointing to the web viewer page
+  const shareableLink = userId ? `https://tracktogetherr.onrender.com/live/${userId}` : '';
 
-  const API_URL = 'http://192.168.29.191:5000/api/users/location'; // your local API
+  const API_URL = 'http://192.168.29.191:5000/api/users/location'; // Your backend API
 
   // Fetch current location once when component loads
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission denied');
+        Alert.alert('Permission denied', 'Please allow location access to use this feature.');
         return;
       }
 
@@ -50,7 +49,7 @@ export default function LiveLocationScreen({ route }) {
   const startSharing = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission denied');
+      Alert.alert('Permission denied', 'Please allow location access to use this feature.');
       return;
     }
 
@@ -58,7 +57,7 @@ export default function LiveLocationScreen({ route }) {
 
     intervalRef.current = setInterval(async () => {
       let loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc.coords); // update map marker too
+      setLocation(loc.coords); // Update map marker
 
       const token = await AsyncStorage.getItem('token');
 
@@ -68,6 +67,7 @@ export default function LiveLocationScreen({ route }) {
           {
             lat: loc.coords.latitude,
             lng: loc.coords.longitude,
+            duration, // Send duration to backend
           },
           {
             headers: {
@@ -77,12 +77,13 @@ export default function LiveLocationScreen({ route }) {
         );
       } catch (error) {
         console.error('Failed to update location:', error.message);
+        Alert.alert('Error', 'Failed to update location. Please try again.');
       }
-    }, 10000); // every 10 seconds
+    }, 10000); // Every 10 seconds
 
     timerRef.current = setTimeout(() => {
       stopSharing();
-    }, duration * 60 * 1000);
+    }, duration * 60 * 1000); // Stop after duration
   };
 
   // Stop sharing
@@ -101,20 +102,26 @@ export default function LiveLocationScreen({ route }) {
     };
   }, []);
 
+  // Share live location link
   const shareLiveLocation = async () => {
+    if (!shareableLink) {
+      Alert.alert('Error', 'User ID not available. Please try again.');
+      return;
+    }
+
     try {
       const result = await Share.share({
-        message: `Track my live location here: ${shareableLink}`,
+        message: `Track my live location for ${duration} minutes: ${shareableLink}`,
       });
-  
+
       if (result.action === Share.sharedAction) {
         console.log('Shared successfully');
       }
     } catch (error) {
       console.error('Error sharing location:', error.message);
+      Alert.alert('Error', 'Failed to share location link.');
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -141,7 +148,7 @@ export default function LiveLocationScreen({ route }) {
       )}
 
       <View style={styles.controls}>
-        <Text>Select Duration:</Text>
+        <Text style={styles.label}>Select Duration:</Text>
         <Picker
           selectedValue={duration}
           style={styles.picker}
@@ -157,11 +164,10 @@ export default function LiveLocationScreen({ route }) {
         ) : (
           <Button title="Start Live Location" onPress={startSharing} color="green" />
         )}
-{!locationSharing && shareableLink && (
-  <Button title="Share Location Link" onPress={shareLiveLocation} />
-)}
 
-
+        {!locationSharing && shareableLink && (
+          <Button title="Share Location Link" onPress={shareLiveLocation} color="blue" />
+        )}
       </View>
     </View>
   );
@@ -178,6 +184,10 @@ const styles = StyleSheet.create({
   controls: {
     padding: 20,
     alignItems: 'center',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
   },
   picker: {
     height: 50,
