@@ -5,7 +5,7 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const API_URL = 'http://192.168.29.191:5000/api/users/location';
+const API_URL = 'http://tracktogether.onrender.com/api/users/location';
 
 const LiveLocationViewer = () => {
   const { userId } = useParams();
