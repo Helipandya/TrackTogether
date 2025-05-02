@@ -97,3 +97,18 @@ exports.updateLocation = async (req, res) => {
   }
 };
 
+
+exports.liveLocation = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (user) {
+      res.json({
+        location: user.location,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
