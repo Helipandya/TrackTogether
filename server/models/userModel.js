@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   location: {
     lat: { type: Number, default: 0 },
     lng: { type: Number, default: 0 },
+
+    updatedAt: Date,
+    expiresAt: Date, // Add expiresAt field
   },
 }, { timestamps: true });
 

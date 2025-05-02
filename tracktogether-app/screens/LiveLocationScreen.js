@@ -1,9 +1,10 @@
 // LiveLocationScreen.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Button, StyleSheet, Alert, Dimensions } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, Dimensions, TouchableOpacity } from 'react-native';
 import { Share } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
@@ -15,6 +16,16 @@ export default function LiveLocationScreen({ route }) {
   const [duration, setDuration] = useState(15); // in minutes
   const timerRef = useRef(null);
   const intervalRef = useRef(null);
+
+  // Request notification permissions
+  useEffect(() => {
+    (async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Notification permission denied', 'You may not receive sharing notifications.');
+      }
+    })();
+  }, []);
 
   // Fetch userId from AsyncStorage
   useEffect(() => {
@@ -55,6 +66,15 @@ export default function LiveLocationScreen({ route }) {
 
     setLocationSharing(true);
 
+    // Send notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Location Sharing Started',
+        body: `Your location is being shared for ${duration} minutes.`,
+      },
+      trigger: null,
+    });
+
     intervalRef.current = setInterval(async () => {
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc.coords); // Update map marker
@@ -87,10 +107,20 @@ export default function LiveLocationScreen({ route }) {
   };
 
   // Stop sharing
-  const stopSharing = () => {
+  const stopSharing = async () => {
     clearInterval(intervalRef.current);
     clearTimeout(timerRef.current);
     setLocationSharing(false);
+
+    // Send notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Location Sharing Stopped',
+        body: 'Your location is no longer being shared.',
+      },
+      trigger: null,
+    });
+
     Alert.alert('Location sharing stopped');
   };
 
@@ -168,6 +198,15 @@ export default function LiveLocationScreen({ route }) {
         {!locationSharing && shareableLink && (
           <Button title="Share Location Link" onPress={shareLiveLocation} color="blue" />
         )}
+
+        {locationSharing && shareableLink && (
+          <View style={styles.linkContainer}>
+            <Text style={styles.linkLabel}>Live Location Link:</Text>
+            <TouchableOpacity onPress={shareLiveLocation}>
+              <Text style={styles.linkText}>{shareableLink}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -192,5 +231,19 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: 200,
+  },
+  linkContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  linkLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  linkText: {
+    fontSize: 14,
+    color: '#1e90ff',
+    textDecorationLine: 'underline',
   },
 });

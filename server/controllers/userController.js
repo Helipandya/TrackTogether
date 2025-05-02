@@ -81,11 +81,12 @@ exports.updateLocation = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (user) {
-      const { lat, lng } = req.body;
+      const { lat, lng, duration } = req.body;
       user.location = {
         lat,
         lng,
-        updatedAt: Date.now(),  // Save last update time
+        updatedAt: Date.now(),
+        expiresAt: duration ? new Date(Date.now() + duration * 60 * 1000) : null, // Set expiration based on duration
       };
       await user.save();
       res.json({ message: 'Location updated' });
@@ -101,14 +102,17 @@ exports.updateLocation = async (req, res) => {
 exports.liveLocation = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (user) {
-      res.json({
-        location: user.location,
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    if (!user || !user.location || (user.location.expiresAt && user.location.expiresAt < new Date())) {
+      return res.status(404).json({ message: 'Location not available or expired' });
     }
+    res.json({
+      location: {
+        lat: user.location.lat,
+        lng: user.location.lng,
+        expiresAt: user.location.expiresAt,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
